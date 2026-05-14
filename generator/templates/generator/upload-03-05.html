@@ -1,0 +1,104 @@
+{% extends "generator/base.html" %}
+{% block title %}Upload Excel{% endblock %}
+
+{% block content %}
+<h2>Generate PDFs from Excel</h2>
+
+{% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+{% if form.errors %}
+    <div class="alert alert-error">Please fix the errors below.</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label for="id_country_code">Country</label>
+    <select name="country_code" id="id_country_code">
+        {% for value, label in form.country_code.field.choices %}
+            <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="id_document_type">Document Type</label>
+    <select name="document_type" id="id_document_type">
+        {% for value, label in form.document_type.field.choices %}
+            <option value="{{ value }}" data-country="{{ value|truncatechars:2 }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="signer_wrapper">
+        <label for="id_signer">Signer</label>
+        <select name="signer" id="id_signer">
+            {% for value, label in form.signer.field.choices %}
+                <option value="{{ value }}" {% if value %}data-country="{{ value|truncatechars:2 }}"{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <label for="id_excel_file">Excel File (.xlsx)</label>
+    <input type="file" name="excel_file" id="id_excel_file" accept=".xlsx" required>
+
+    <label for="id_sheet_name">Sheet Name</label>
+    <input type="text" name="sheet_name" id="id_sheet_name" placeholder="Leave blank for default">
+    <p class="help-text">If your Excel has multiple sheets, enter the sheet name here.</p>
+    <label for="id_letter_date">Letter Date</label>
+    <input type="date" name="letter_date" id="id_letter_date">
+    <p class="help-text">Leave blank for today's date.</p>
+    <div style="margin-top: 15px;">
+        <label style="display: inline; font-weight: normal; cursor: pointer;">
+            <input type="checkbox" name="encrypt_pdfs" id="id_encrypt_pdfs" style="width: auto; margin-right: 8px;">
+            <strong>Encrypt PDFs with password</strong>
+        </label>
+        <p class="help-text">Requires a "Password" column in the Excel file. Each row must have a password.</p>
+    </div>
+    <button type="submit" class="btn">Generate PDFs</button>
+</form>
+
+<script>
+    // Filter document types and signers based on selected country
+    const countrySelect = document.getElementById('id_country_code');
+    const docSelect = document.getElementById('id_document_type');
+    const signerSelect = document.getElementById('id_signer');
+    const signerWrapper = document.getElementById('signer_wrapper');
+
+    const allDocOptions = [...docSelect.options].map(opt => ({
+        value: opt.value,
+        label: opt.text,
+        country: opt.value.split('|')[0]
+    }));
+
+    const allSignerOptions = [...signerSelect.options].map(opt => ({
+        value: opt.value,
+        label: opt.text,
+        country: opt.value ? opt.value.split('|')[0] : ''
+    }));
+
+    function filterOptions() {
+        const country = countrySelect.value;
+
+        // Filter doc types
+        docSelect.innerHTML = '';
+        allDocOptions.filter(o => o.country === country).forEach(o => {
+            const opt = new Option(o.label, o.value);
+            docSelect.add(opt);
+        });
+
+        // Filter signers
+        signerSelect.innerHTML = '';
+        const countrySigners = allSignerOptions.filter(o => o.country === country || o.country === '');
+        countrySigners.forEach(o => {
+            const opt = new Option(o.label, o.value);
+            signerSelect.add(opt);
+        });
+
+        // Show/hide signer field
+        const hasSigners = countrySigners.some(o => o.value !== '');
+        signerWrapper.style.display = hasSigners ? 'block' : 'none';
+    }
+
+    countrySelect.addEventListener('change', filterOptions);
+    filterOptions(); // Run on page load
+</script>
+{% endblock %}

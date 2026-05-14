@@ -1,0 +1,69 @@
+{% extends "generator/base.html" %}
+{% block title %}History{% endblock %}
+
+{% block content %}
+<h2>Generation History</h2>
+
+<a href="{% url 'upload' %}" class="btn" style="margin-bottom: 20px;">New Upload</a>
+
+{% if has_processing %}
+    <div class="alert alert-success" id="processing-banner">
+        ⏳ Jobs are being processed... this page will refresh automatically.
+    </div>
+{% endif %}
+
+{% if jobs %}
+<table>
+    <thead>
+        <tr>
+            {% if user.is_staff %}<th>User</th>{% endif %}
+            <th>Date</th>
+            <th>Country</th>
+            <th>Type</th>
+            <th>PDFs</th>
+            <th>Status</th>
+            <th>Expires In</th>
+            <th>Downloads</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in jobs %}
+        <tr>
+            {% if user.is_staff %}<td>{{ job.user.username }}</td>{% endif %}
+            <td>{{ job.created_at|date:"d.m.Y H:i" }}</td>
+            <td>{{ job.country_code }}</td>
+            <td>{{ job.document_type }}</td>
+            <td>{{ job.pdf_count }}</td>
+            <td class="status-{{ job.status }}">{{ job.get_status_display }}</td>
+            <td>{{ job.time_remaining }}</td>
+            <td>
+                {% if job.status == 'success' and job.time_remaining != 'Expired' %}
+                    <a href="{% url 'download_zip' job.id %}" class="btn" style="padding: 5px 12px; font-size: 13px;">Download ZIP ({{ job.pdf_count }})</a>
+                    <a href="{% url 'job_detail' job.id %}" style="display: block; font-size: 12px; margin-top: 6px; color: #666;">View individual files</a>
+                {% elif job.status == 'processing' %}
+                    <span style="color: #856404; font-size: 13px;">⏳ Generating...</span>
+                {% elif job.status == 'error' %}
+                    <span style="color: #999; font-size: 12px;">{{ job.error_message|truncatechars:80 }}</span>
+                {% elif job.time_remaining == 'Expired' %}
+                    <span style="color: #999; font-size: 12px;">Expired</span>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p style="margin-top: 20px; color: #888;">No generation jobs yet. Upload an Excel file to get started.</p>
+{% endif %}
+
+{% if has_processing %}
+<script>
+    // Auto-refresh every 5 seconds while jobs are processing
+    setTimeout(function() {
+        window.location.reload();
+    }, 5000);
+</script>
+{% endif %}
+{% endblock %}
