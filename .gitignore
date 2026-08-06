@@ -8,6 +8,10 @@ db.sqlite3
 /staticfiles/
 input/
 output/
+db.sqlite3.bak
+templates_backup.json
+recovered.sql
+template_recovered_raw.txt
 
 # Virtual environment
 .venv/

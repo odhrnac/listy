@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', lambda request: redirect('upload'), name='home'),
     path('', include('generator.urls')),
+    path('', include('doctemplates.urls')),
 ]
