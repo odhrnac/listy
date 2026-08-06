@@ -1,0 +1,37 @@
+{% extends "generator/base.html" %}
+{% block title %}Templates{% endblock %}
+{% block content %}
+
+<p><a href="{% url 'template_create' %}">+ Create New Template</a></p>
+
+<h2>Shared Templates</h2>
+
+{% if templates %}
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>Name</th>
+      <th>Country</th>
+      <th>Document Type</th>
+      <th>Default</th>
+      <th>Last Updated</th>
+      <th>Actions</th>
+    </tr>
+    {% for t in templates %}
+      <tr>
+        <td>{{ t.name }}</td>
+        <td>{{ t.country_code }}</td>
+        <td>{{ t.document_type }}</td>
+        <td>{% if t.is_default %}✔{% endif %}</td>
+        <td>{{ t.updated_at|date:"d.m.Y H:i" }}</td>
+        <td>
+          <a href="{% url 'template_edit' t.id %}">Edit</a>
+          <a href="{% url 'template_delete' t.id %}">Delete</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <p>No templates yet. Create one!</p>
+{% endif %}
+
+{% endblock %}

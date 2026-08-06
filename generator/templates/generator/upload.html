@@ -43,7 +43,13 @@
             {% endfor %}
         </select>
     </div>
-
+        <label for="id_template">Use Template (optional)</label>
+        <select name="template" id="id_template">
+        {% for value, label in form.template.field.choices %}
+            <option value="{{ value }}" {% if form.template.value == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+        </select>
+        <p class="help-text">Select a saved template to use instead of the built-in layout.</p>
     <label for="id_excel_file">Excel File (.xlsx)</label>
     <input type="file" name="excel_file" id="id_excel_file" accept=".xlsx" required>
 

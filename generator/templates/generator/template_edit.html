@@ -1,0 +1,29 @@
+{% extends "generator/base.html" %}
+{% block title %}
+  {% if template %}Edit Template{% else %}Create Template{% endif %}
+{% endblock %}
+{% block content %}
+
+<h2>{% if template %}Edit: {{ template.name }}{% else %}Create New Template{% endif %}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" name="save">Save Template</button>
+  <button type="submit" name="preview">Preview</button>
+  <a href="{% url 'template_list' %}">Cancel</a>
+</form>
+
+{% if preview_html %}
+  <h3>Live Preview</h3>
+  <div style="margin-top: 20px;">
+    {{ preview_html|safe }}
+  </div>
+{% endif %}
+
+<p style="margin-top:20px; font-size:0.9em; color:#555;">
+  Use <code>{% templatetag openvariable %} field_name {% templatetag closevariable %}</code> for Excel column values.
+  Available: <code>PHName</code>, <code>PHAddrPermStreet</code>, <code>PHAddrPermNumber</code>, <code>PHAddrPermZIP</code>, <code>PHAddrPermTown</code>, <code>ContractNumber</code>, <code>PremiumOwed</code>, <code>PHGenderCode</code>, <code>RegionCode</code>, <code>letter_date</code>.
+</p>
+
+{% endblock %}

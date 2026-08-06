@@ -10,4 +10,8 @@ urlpatterns = [
     path('history/<int:job_id>/', views.job_detail_view, name='job_detail'),
     path('download/zip/<int:job_id>/', views.download_zip, name='download_zip'),
     path('download/<int:pdf_id>/', views.download_pdf, name='download_pdf'),
+    path('templates/', views.template_list, name='template_list'),
+    path('templates/create/', views.template_edit, name='template_create'),
+    path('templates/<int:template_id>/edit/', views.template_edit, name='template_edit'),
+    path('templates/<int:template_id>/delete/', views.template_delete, name='template_delete'),
 ]

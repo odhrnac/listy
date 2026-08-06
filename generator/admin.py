@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import UserProfile, GenerationJob, GeneratedPDF
-
+from .models import GenerationJob, GeneratedPDF, UserProfile, Template
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -21,3 +20,9 @@ admin.site.register(User, CustomUserAdmin)
 
 admin.site.register(GenerationJob)
 admin.site.register(GeneratedPDF)
+
+@admin.register(Template)
+class TemplateAdmin(admin.ModelAdmin):
+    list_display = ['name', 'country_code', 'document_type', 'is_default', 'updated_at']
+    list_filter = ['country_code', 'document_type', 'is_default']
+    search_fields = ['name', 'html_content']
