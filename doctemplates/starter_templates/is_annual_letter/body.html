@@ -1,0 +1,156 @@
+<div class="al">
+
+  {# ===== Page 1: address, greeting, policy summary ===== #}
+  <div class="al-first">
+    <div class="al-title">
+      Annual letter for your insurance policy
+      {% if "Flexible Savings Plan" in ProductName %}NOVIS „Flexible Savings Plan”{% elif "Life Savings Plan" in ProductName %}NOVIS „Life Savings Plan”{% elif "Life Protector" in ProductName %}NOVIS „Life Protector”{% elif "Wealth Insuring" in ProductName %}NOVIS „Wealth Insuring”{% else %}NOVIS{% endif %}<br>
+      Contract number: {{ Contract_number }}
+    </div>
+
+    <div class="al-address">
+      {% if PH_FirstName %}{{ PH_FirstName }} {% endif %}{{ PH_LastName }}<br>
+      {{ PH_Street }}<br>
+      {{ PH_Zip }} {{ PH_City }}
+    </div>
+
+    <div class="al-date">Bratislava, {{ letter_date }}</div>
+
+    <div class="al-greeting">
+      {% if PH_Gender == "M" or PH_Gender == "F" or PH_Gender == "C" %}Dear {% if PH_TitleBefore %}{{ PH_TitleBefore }} {% endif %}{% if PH_FirstName %}{{ PH_FirstName }} {% endif %}{{ PH_LastName }}{% if PH_TitleAfter %} {{ PH_TitleAfter }}{% endif %},{% endif %}
+    </div>
+
+    <p class="al-intro">we value your trust and thank you for being a part of NOVIS Insurance Company, NOVIS Versicherungsgesellschaft, NOVIS Compagnia di Assicurazioni, NOVIS Poisťovňa a.s. We continue to stand by you in case of unexpected life situations.</p>
+
+    {% if "Life Protector" not in ProductName %}
+    <div class="al-account-heading">YOUR INSURANCE ACCOUNT</div>
+    <p class="al-account-text">On the last day of each month, new premiums paid and current monthly valuation are added to the existing value of the insurance account, while the costs of the insurance contract are deducted (including insurance costs). The initial value of the insurance account is invested in NOVIS insurance funds the following month according to the allocation ratio specified by you.</p>
+    {% endif %}
+
+    <div class="al-heading al-state">STATE OF YOUR INSURANCE ACCOUNT: {{ Closing_date|excel_date }}</div>
+
+    <table class="al-table al-striped al-policy">
+      <tr class="al-head"><th>Policyholder</th><td>{% if PH_FirstName %}{{ PH_FirstName }} {% endif %}{{ PH_LastName }}</td></tr>
+      <tr><th>Contract number:</th><td>{{ Contract_number }}</td></tr>
+      <tr><th>Date of conclusion of insurance contract:</th><td>{{ ValidFrom|excel_date }}</td></tr>
+      <tr><th>Technical start date:</th><td>{{ PH_TechnicalBeginn|excel_date }}</td></tr>
+      <tr><th>Single premium:</th><td>{{ IncreasedPremium|money:0 }} {{ Currency }}</td></tr>
+      <tr><th>Regular premium:</th><td>{% if not RegularPremium %}0{% elif "Life Protector" in ProductName %}{{ RegularPremium|money }} {{ Currency }}{% else %}{{ RegularPremium|money:0 }} {{ Currency }}{% endif %}</td></tr>
+      <tr><th>Payment frequency:</th><td>{{ Periodicity }}</td></tr>
+      {% if "Life Protector" not in ProductName %}
+      <tr class="al-tall"><th>Current value of the insurance account (incl.NOVIS Loyalty Bonus):</th><td>{{ Saldo_incl_LoyaltyBonus|money }} {{ Currency }}</td></tr>
+      <tr class="al-tall"><th>Current value of the insurance account (excl. NOVIS Loyalty Bonus):</th><td>{{ InvestmentBalance|money }} {{ Currency }}</td></tr>
+      <tr><th>NOVIS Loyalty Bonus (incl. capitalizing):</th><td>{{ NOVIS_LoyaltyBonus|money }} {{ Currency }}</td></tr>
+      {% endif %}
+      {% if "Wealth Insuring" in ProductName %}
+      <tr><th>NOVIS Survival Bonus:</th><td>{% if NOVIS_SurvivalBonus == "N" %}NO{% else %}YES{% endif %}</td></tr>
+      <tr><th>NOVIS Special Bonus:</th><td>{{ Special_Bonus|money }} {{ Currency }}</td></tr>
+      {% endif %}
+    </table>
+  </div>
+
+  {# ===== Page 2 (and 3 when there are many insured persons): payments, funds, insured persons ===== #}
+  <div class="al-payments" style="break-before: page">
+    <div class="al-heading">PAID PREMIUM FOR LAST 12 MONTHS</div>
+    <table class="al-table al-striped al-center">
+      <tr class="al-head"><td>Date of receipt of payment</td><td>Payment</td></tr>
+      <tr><td>{{ pay1_ValueDate|excel_date }}</td><td>{% if pay1_Amount %}{{ pay1_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay2_ValueDate|excel_date }}</td><td>{% if pay2_Amount %}{{ pay2_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay3_ValueDate|excel_date }}</td><td>{% if pay3_Amount %}{{ pay3_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay4_ValueDate|excel_date }}</td><td>{% if pay4_Amount %}{{ pay4_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay5_ValueDate|excel_date }}</td><td>{% if pay5_Amount %}{{ pay5_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay6_ValueDate|excel_date }}</td><td>{% if pay6_Amount %}{{ pay6_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay7_ValueDate|excel_date }}</td><td>{% if pay7_Amount %}{{ pay7_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay8_ValueDate|excel_date }}</td><td>{% if pay8_Amount %}{{ pay8_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay9_ValueDate|excel_date }}</td><td>{% if pay9_Amount %}{{ pay9_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay10_ValueDate|excel_date }}</td><td>{% if pay10_Amount %}{{ pay10_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay11_ValueDate|excel_date }}</td><td>{% if pay11_Amount %}{{ pay11_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+      <tr><td>{{ pay12_ValueDate|excel_date }}</td><td>{% if pay12_Amount %}{{ pay12_Amount|money:"auto" }} {{ Currency }}{% endif %}</td></tr>
+    </table>
+    <p class="al-note">*in case of credit-card payment, amount received by our company is reduced by transaction fees</p>
+  </div>
+
+  {% if "Life Protector" not in ProductName %}
+  <div class="al-funds">
+    <div class="al-heading">Evaluation of NOVIS insurance funds: {{ Closing_date|excel_date }}</div>
+    <table class="al-table al-striped al-funds-table">
+      <tr class="al-head"><td>Insurance Fund</td><td>Allocation</td><td>Capitalizing<br>(last 12 months)</td><td>Current<br>value{% if "Wealth Insuring" in ProductName %}*{% endif %}</td></tr>
+      {% if "Flexible Savings Plan" in ProductName or "Life Savings Plan" in ProductName %}
+      <tr><td>NOVIS Fixed Income Insurance Fund</td><td>{{ Allocation_FixedIncomIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_FixedIncomIFund|floatformat:2 }} %</td><td>{{ Value_FixedIncomIFund|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Global Select Insurance Fund</td><td>{{ Allocation_GlobalSelectIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_GlobalSelectIFund|floatformat:2 }} %</td><td>{{ Value_GlobalSelectIFund|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Sustainability Insurance Fund</td><td>{{ Allocation_SustainabilityIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_SustainabilityIFund|floatformat:2 }} %</td><td>{{ Value_SustainabilityIFund|money }} {{ Currency }}</td></tr>
+      {% else %}
+      <tr><td>NOVIS Guaranteed Growth Insurance Fund</td><td>{{ Allocation_Guaranteed|floatformat:2 }} %</td><td>{% if ApprecLast12m_Guaranteed %}{{ ApprecLast12m_Guaranteed|floatformat:2 }}{% else %}3.66{% endif %} %</td><td>{{ Value_Guaranteed|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS ETF Shares Insurance Fund</td><td>{{ Allocation_ETF|floatformat:2 }} %</td><td>{{ ApprecLast12m_ETF|floatformat:2 }} %</td><td>{{ Value_ETF|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Gold Insurance Fund</td><td>{{ Allocation_Gold|floatformat:2 }} %</td><td>{{ ApprecLast12m_Gold|floatformat:2 }} %</td><td>{{ Value_Gold|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Entrepreneurial Insurance Fund</td><td>{{ Allocation_Entrep|floatformat:2 }} %</td><td>{{ ApprecLast12m_Entrep|floatformat:2 }} %</td><td>{{ Value_Entrep|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Mortgage Insurance Fund</td><td>{{ Allocation_MortgageIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_Mortgage|floatformat:2 }} %</td><td>{{ Value_Mortgage|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Family Office Insurance Fund</td><td>{{ Allocation_FamilyIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_FamOffice|floatformat:2 }} %</td><td>{{ Value_FamOffice|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS World Brands Insurance Fund</td><td>{{ Allocation_WorldIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_Wbrands|floatformat:2 }} %</td><td>{{ Value_Wbrands|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Digital Assets Insurance Fund</td><td>{{ Allocation_DigitalAssetsIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_Digital|floatformat:2 }} %</td><td>{{ Value_Digital|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Fixed Income Insurance Fund</td><td>{{ Allocation_FixedIncomIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_FixedIncomIFund|floatformat:2 }} %</td><td>{{ Value_FixedIncomIFund|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Global Select Insurance Fund</td><td>{{ Allocation_GlobalSelectIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_GlobalSelectIFund|floatformat:2 }} %</td><td>{{ Value_GlobalSelectIFund|money }} {{ Currency }}</td></tr>
+      <tr><td>NOVIS Sustainability Insurance Fund</td><td>{{ Allocation_SustainabilityIFund|floatformat:2 }} %</td><td>{{ ApprecLast12m_SustainabilityIFund|floatformat:2 }} %</td><td>{{ Value_SustainabilityIFund|money }} {{ Currency }}</td></tr>
+      {% endif %}
+    </table>
+    {% if "Wealth Insuring" in ProductName %}<p class="al-note">*incl. current NOVIS Loyalty Bonus value</p>{% endif %}
+  </div>
+  {% endif %}
+
+  {# Insured persons: rows of the second Excel for this contract, one block per person (Rnk) #}
+  {% regroup insured|dictsort:"Rnk" by Rnk as persons %}
+  {% for person in persons %}
+  <div class="al-person">
+    <div class="al-person-label">Insured person</div>
+    <div class="al-person-name">{{ person.list.0.FirstName }} {{ person.list.0.Lastname }}</div>
+    <table class="al-table al-person-table">
+      {% for row in person.list %}
+      <tr><th>Date of birth:</th><td>{{ row.BirthDate|excel_date }}</td></tr>
+      <tr><th>Start of insurance:</th><td>{{ row.ValidFrom|excel_date }}</td></tr>
+      <tr><th>Death Insurance:</th><td>{{ row.Death_Cover|money:0|default:"0" }} {{ row.Symbol }}</td></tr>
+      {% if "Life Savings Plan" in ProductName or "Life Protector" in ProductName %}
+      <tr><th>Critical illnesses insurance:</th><td>{{ row.Critical_illness|money:0|default:"0" }} {{ row.Symbol }}</td></tr>
+      {% elif "Wealth Insuring" in ProductName %}
+      <tr><th>Health insurance (illnesses, operations and long term care):</th><td>{{ row.Critical_illness|money:0|default:"0" }} {{ row.Symbol }}</td></tr>
+      {% endif %}
+      {% if "Life Savings Plan" in ProductName %}
+      <tr><th>Permanent disability insurance</th><td>{{ row.Disability_Cover|money:0|default:"0" }} {{ row.Symbol }}</td></tr>
+      {% elif "Wealth Insuring" in ProductName %}
+      <tr><th>Accident insurance (accident, extended accident and accidental death):</th><td>{{ row.Death_by_Accident|money:0|default:"0" }} {{ row.Symbol }}</td></tr>
+      {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+  {% endfor %}
+
+  {# ===== Last page: flexibility, contact, CEO signature ===== #}
+  <div class="al-last" style="break-before: page">
+    <div class="al-bold al-flex-heading">EXTRAORDINARY FLEXIBILITY</div>
+    <p class="al-flex-text">Since life situations and your personal priorities may change over time, we would like to remind you of the possibility to change or modify your insurance policy and its parameters for free once a year. In particular, the possibility to:</p>
+    <ul class="al-bullets">
+      <li class="al-bullet-1">reduce insurance coverage and insured sums  for selected risks;</li>
+      <li class="al-bullet-2">apply other possible changes (except for increasing coverage, increasing insurance premiums and personal reinsurance) according to your requirements.</li>
+    </ul>
+    {% if "Life Protector" not in ProductName %}
+    <p class="al-monthly">Once a month:</p>
+    <ul class="al-bullets">
+      <li class="al-bullet-3">change the allocation ratio of individual insurance funds based on changes in your personal preferences or on the basis of the current financial market situation.</li>
+    </ul>
+    {% endif %}
+    <p class="al-contact">If you need to report an insured event or in case of any request or question, you can contact us directly at <a href="mailto:Iceland-service@novis.eu">Iceland-service@novis.eu</a>.</p>
+    <div class="al-bold al-details-heading">MORE DETAILS</div>
+    <p class="al-details">All the important information about the insurance product {% if "Flexible Savings Plan" in ProductName %}NOVIS „Flexible Savings Plan”{% elif "Life Savings Plan" in ProductName %}NOVIS „Life Savings Plan”{% elif "Life Protector" in ProductName %}NOVIS „Life Protector”{% elif "Wealth Insuring" in ProductName %}NOVIS „Wealth Insuring”{% else %}NOVIS{% endif %} is stated in the General Terms and Conditions and on our website www.novis.eu, where you will also find the current evaluation of NOVIS insurance funds.</p>
+    <p class="al-regards">Best regards</p>
+
+    <div class="al-ceo">
+      ...............................................<br>
+      <b>Siegfried Fatzi</b><br>
+      CEO of NOVIS Insurance Company,<br>
+      NOVIS Versicherungsgesellschaft,<br>
+      NOVIS Compagnia di Assicurazioni,<br>
+      NOVIS Poisťovňa a.s.
+    </div>
+    <div class="al-code">QT3{{ Contract_number }}</div>
+  </div>
+
+</div>

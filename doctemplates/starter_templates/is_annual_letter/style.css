@@ -1,0 +1,83 @@
+/* Sizes and positions follow the Jasper report AL_IS (595 x 842 pt page, 40 pt side margins). */
+@font-face { font-family: 'NovisHN'; src: url('/static/fonts/HelveticaNeueLTCom-Lt.ttf'); font-weight: normal; }
+
+.al { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; line-height: 11.5pt; color: #000; }
+.al p { margin: 0; }
+/* Each block keeps its children's margins inside, so its height on the page is predictable */
+.al-first, .al-payments, .al-funds, .al-person, .al-last { display: flow-root; }
+.al b, .al-bold { font-weight: bold; }
+.al a { color: #0000ff; }
+
+/* Page 1 */
+.al-title { margin-top: 20pt; height: 41pt; color: #56CC62; font-size: 14pt; line-height: 20.5pt; font-weight: bold; }
+.al-address { margin-left: 340pt; height: 45pt; line-height: 15pt; }
+.al-date { margin: 24pt 0 0 340pt; height: 15pt; line-height: 15pt; }
+.al-greeting { margin-top: 22pt; height: 15pt; line-height: 15pt; }
+.al-intro { margin-top: 8pt; height: 45pt; text-align: justify; }
+.al-account-heading { margin-top: 55pt; height: 15pt; font-size: 11pt; font-weight: bold; }
+.al-account-text { margin-top: 5pt; height: 60pt; text-align: justify; }
+.al-heading { height: 18pt; font-size: 12pt; line-height: 18pt; font-weight: bold; }
+.al-state { margin-top: 12pt; }
+
+/* Tables: green borders, green header row, light green stripes */
+.al-table { width: 100%; border-collapse: collapse; margin: 0; }
+.al-table th, .al-table td {
+  border: 0.75pt solid #0FBE41; background: transparent; height: 15pt; padding: 0 5pt;
+  font-size: 10pt; line-height: 12pt; font-weight: normal; text-align: left; vertical-align: middle; color: #000;
+}
+.al-table .al-head > * { background: #0FBE41; color: #fff; }
+.al-striped tr:nth-child(even) > * { background: #E2EFD9; }
+
+.al-policy { margin-top: 12pt; }
+.al-policy th { width: 300pt; font-weight: bold; }
+.al-policy td { text-align: right; padding-right: 10pt; }
+.al-policy .al-head > * { height: 18pt; font-weight: bold; text-align: left; }
+.al-policy .al-tall > * { height: 28pt; }
+
+.al-center td { text-align: center; }
+.al-center .al-head > * { font-weight: bold; }
+.al-center td:first-child { width: 275pt; }
+.al-note { margin-top: 7pt; height: 15pt; line-height: 15pt; }
+
+/* Page 2: funds */
+.al-funds { margin-top: 15pt; }
+.al-funds-table { margin-top: 2pt; }
+.al-funds-table td:nth-child(1) { width: 220pt; }
+.al-funds-table td:nth-child(2) { width: 55pt; text-align: right; }
+.al-funds-table td:nth-child(3) { width: 135pt; text-align: right; }
+.al-funds-table td:nth-child(4) { text-align: right; }
+.al-funds-table .al-head > * { height: 30pt; text-align: center; }
+.al-funds-table .al-head > :first-child { text-align: left; }
+.al-funds .al-note { margin-top: 5pt; }
+
+/* Insured persons (one block per person) */
+.al-person { margin-top: 8pt; }
+.al-person-label { height: 18pt; padding: 2pt 0 0 2pt; box-sizing: border-box; }
+.al-person-name { height: 15pt; line-height: 15pt; padding-left: 7pt; background: #0FBE41; color: #fff; }
+.al-person-table th { width: 390pt; padding-left: 10pt; }
+.al-person-table td { text-align: right; }
+.al-person-table tr:nth-child(odd) > * { background: #E2EFD9; }
+
+/* Last page: positions are fixed like in the Jasper report */
+.al-last { position: relative; height: 642pt; }
+.al-flex-heading { margin-top: 20pt; height: 15pt; line-height: 15pt; }
+.al-flex-text { margin-top: 5pt; height: 45pt; text-align: justify; }
+.al-bullets { margin: 0; padding: 0; list-style: none; }
+.al-bullets li { position: relative; padding-left: 50pt; text-align: justify; }
+.al-bullets li::before { content: "\2022"; position: absolute; left: 30pt; width: 20pt; text-align: center; }
+.al-bullet-1 { height: 15pt; }
+.al-bullet-2 { height: 30pt; }
+.al-monthly { margin-top: 10pt; height: 15pt; }
+.al-bullet-3 { margin-top: 15pt; height: 30pt; }
+.al-contact { margin-top: 10pt; height: 30pt; text-align: justify; }
+.al-details-heading { margin-top: 10pt; height: 15pt; line-height: 15pt; }
+.al-details { margin-top: 10pt; height: 45pt; }
+.al-regards { margin-top: 10pt; height: 15pt; }
+.al-ceo { position: absolute; top: 481pt; left: 230pt; width: 230pt; line-height: 15pt; }
+.al-code { position: absolute; top: 632pt; left: 0; font-size: 3pt; line-height: 4pt; }
+
+/* Footer: three columns like the Jasper page footer */
+.al-footer { display: flex; padding-left: 40pt; font-family: 'NovisHN', Helvetica, Arial, sans-serif; font-size: 7pt; line-height: 9pt; color: #60806C; }
+.al-footer > div:nth-child(1) { width: 190pt; }
+.al-footer > div:nth-child(2) { width: 183pt; margin-left: 7pt; }
+.al-footer > div:nth-child(3) { width: 124pt; margin-left: 10pt; text-align: right; }
