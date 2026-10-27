@@ -133,8 +133,7 @@ def _render_preview(template):
         return f"""
         <div style="
             width: 794px;
-            aspect-ratio: 794 / 1123;
-            max-width: 100%;
+            height: 1123px;
             margin: 20px auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);

@@ -1,0 +1,17 @@
+@font-face { font-family: 'NovisHN'; src: url('/static/fonts/HelveticaNeueLTCom-Lt.ttf'); font-weight: normal; }
+@font-face { font-family: 'NovisHN'; src: url('/static/fonts/HelveticaNeueLTCom-Roman.ttf'); font-weight: bold; }
+.nl, .nl-footer { font-family: 'NovisHN', Helvetica, Arial, sans-serif; color: #767171; }
+.nl { font-size: 10pt; line-height: 14pt; }
+.nl b { font-weight: bold; -webkit-text-stroke: 0.35px currentColor; }
+.nl-head { width: 100%; border-collapse: collapse; margin: 0; }
+.nl-head td { vertical-align: top; padding: 0; border: none; font-size: 10pt; line-height: 14pt; }
+.nl-left { width: 383px; }
+.nl-title td { padding-top: 25pt; }
+.nl-title .nl-left { font-size: 12pt; line-height: 14pt; }
+.nl p { margin: 0 0 8pt 0; line-height: 18pt; }
+.nl .nl-greeting { margin: 20pt 0 26pt 0; }
+.nl-sign { text-align: right; margin-top: 10pt; }
+.nl-sign-space { height: 55pt; }
+.nl-footer { display: flex; padding: 0 27px; font-size: 7pt; line-height: 10pt; }
+.nl-footer > div { flex: 1; }
+.nl-footer .r { text-align: right; }

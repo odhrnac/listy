@@ -1,0 +1,53 @@
+<div class="nl">
+  <table class="nl-head">
+    <tr>
+      <td class="nl-left">
+        <b>{% if PHGenderCode == "M" %}Mr. {% elif PHGenderCode == "F" %}Mrs. {% endif %}{{ PHName }}</b><br>
+        {{ PHAddrPermStreet }} {{ PHAddrPermNumber }}<br>
+        {{ PHAddrPermZIP }} {{ PHAddrPermTown }}<br>
+        {% if RegionCode == "ISreg" %}Iceland{% endif %}
+      </td>
+      <td>
+        <b>NOVIS Insurance Company</b><br>
+        <b>NOVIS Versicherungsgesellschaft,</b><br>
+        <b>NOVIS Compagnia di Assicurazioni,</b><br>
+        <b>NOVIS Poisťovňa a.s.</b><br>
+        Námestie Ľudovíta Štúra 2<br>
+        811 02 Bratislava<br>
+        Slovakia<br>
+        <br>
+        <b>Tryggingar og ráðgjöf ehf.</b><br>
+        Sóltún 26<br>
+        105 Reykjavík<br>
+        Iceland
+      </td>
+    </tr>
+    <tr class="nl-title">
+      <td class="nl-left"><b>Tilkynning vegna ógreiddra iðgjalda<br>Samningur nr. {{ ContractNumber }}</b></td>
+      <td>{{ letter_date }}</td>
+    </tr>
+  </table>
+
+  <p class="nl-greeting">{% if PHGenderCode == "M" %}Kæri{% elif PHGenderCode == "F" %}Kæra{% elif PHGenderCode == "C" %}Kæri viðskiptavinur{% endif %} {{ PHName }},</p>
+
+  <p>Hér með tilkynnum við þér að þú hefur ekki greidd samningsbundin iðgjöld.</p>
+
+  <p>Vinsamlegast athugaðu að samningsbundin iðgjöld þarf að greiða á fyrsta degi hvers mánaðar eða þess tímabils sem greiðslutíðni samnings segir til um. Ógreidd iðgjöld eru nú <b>{{ PremiumOwed|floatformat:2 }}</b> evrur.</p>
+
+  <p>Við hvetjum þig til að greiða ógreidd iðgjöld innan 14 daga frá móttöku þessa bréfs. Ef skuld er ekki greidd innan frests verður samningnum þínum sagt upp og tryggingar þínar falla úr gildi.</p>
+
+  <p>Ef ógreidd iðgjöld verða ekki greidd, getur tryggingafélagið nýtt sér lagaleg úrræði til að innheimta upphæðina. Vinsamlegast athugaðu að ef til þess kemur að iðgjöld verði ekki greidd getur skuld þín aukist vegna vaxta, innheimtukostnaðar og dómsgjalda.</p>
+
+  <p>Ekki hika við að hafa samband ef þú hefur spurningar eða ef þú vilt semja um greiðslur.</p>
+
+  <p>Með kveðju,</p>
+
+  <div class="nl-sign">
+    <div class="nl-sign-space"></div>
+    <b>Andrea Danišová</b><br>
+    Team leader - Contracts Administration Iceland<br>
+    <br>
+    <b>NOVIS Insurance Company, NOVIS Versicherungsgesellschaft,<br>
+    NOVIS Compagnia di Assicurazioni, NOVIS Poisťovňa a.s</b>
+  </div>
+</div>

@@ -2,6 +2,12 @@
 {% block title %}
   {% if template %}Edit Template{% else %}Create Template{% endif %}
 {% endblock %}
+{% block extra_head %}
+<style>
+  /* The preview is drawn at real A4 size (794px wide), so the page needs to be wider than the default 700px */
+  .container { max-width: 900px; }
+</style>
+{% endblock %}
 {% block content %}
 
 <h2>{% if template %}Edit: {{ template.name }}{% else %}Create New Template{% endif %}</h2>
@@ -22,7 +28,7 @@
 
 {% if preview_html %}
   <h3>Live Preview</h3>
-  <div style="margin-top: 20px;">
+  <div style="margin-top: 20px; overflow-x: auto;">
     {{ preview_html|safe }}
   </div>
 {% endif %}
