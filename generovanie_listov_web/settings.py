@@ -65,6 +65,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # Filters usable in letter templates without {% load %}, e.g. {{ PremiumOwed|money }}
+            'builtins': ['doctemplates.templatetags.letter_filters'],
         },
     },
 ]

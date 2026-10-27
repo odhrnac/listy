@@ -65,7 +65,7 @@ def _render_preview(template):
         'PHAddrPermZIP': '101',
         'PHAddrPermTown': 'Reykjavík',
         'ContractNumber': 'C-12345',
-        'PremiumOwed': '15.500',
+        'PremiumOwed': '1906.81',
         'PHGenderCode': 'M',
         'RegionCode': 'ISreg',
         'letter_date': get_letter_date(),

@@ -36,6 +36,7 @@
 <p style="margin-top:20px; font-size:0.9em; color:#555;">
   Use <code>{% templatetag openvariable %} field_name {% templatetag closevariable %}</code> for Excel column values.
   Available: <code>PHName</code>, <code>PHAddrPermStreet</code>, <code>PHAddrPermNumber</code>, <code>PHAddrPermZIP</code>, <code>PHAddrPermTown</code>, <code>ContractNumber</code>, <code>PremiumOwed</code>, <code>PHGenderCode</code>, <code>RegionCode</code>, <code>letter_date</code>.
+  <br>Amounts: <code>{% templatetag openvariable %} PremiumOwed|money {% templatetag closevariable %}</code> gives <code>1 906.81</code>.
 </p>
 
 {% endblock %}
