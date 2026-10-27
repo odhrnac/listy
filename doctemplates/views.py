@@ -152,7 +152,7 @@ def _render_preview(template):
                 right: {mr}px;
                 bottom: {mb}px;
                 border: 1px dotted #aaa;
-                overflow: hidden;
+                overflow: visible;
                 font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
                 font-size: 10pt;
                 line-height: 1.5;

@@ -14,7 +14,7 @@ ASSETS_DIR = os.path.join(settings.BASE_DIR, 'assets', 'IS')
 PLACED_IMAGES = [
     ('background', 'IS background', 'Novis_HP_motyl_06062019_prev.png', 0, 0, 794, 1123, 0),
     ('logo', 'IS logo', 'NOVISLG.png', 29, 23, 156, 97, 10),
-    ('signature', 'IS signature AD', 'sign_AD.png', 596, 854, 130, 53, 10),
+    ('signature', 'IS signature AD', 'sign_AD.png', 596, 852, 130, 53, 10),
 ]
 
 
