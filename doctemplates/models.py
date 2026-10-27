@@ -20,6 +20,9 @@ class Template(models.Model):
     margin_right = models.IntegerField(default=50, help_text='Right margin in points')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    footer_html = models.TextField(blank=True, default='', help_text='Footer content, placed below the bottom margin')
+    footer_top = models.IntegerField(default=30,
+                                     help_text='Distance from bottom of page to top of footer, in points (pt)')
 
     class Meta:
         ordering = ['-is_default', '-updated_at']
@@ -38,3 +41,44 @@ class ImageAsset(models.Model):
 
     def __str__(self):
         return self.title
+
+class TemplatePlacedImage(models.Model):
+    ROLE_CHOICES = [
+        ('logo', 'Logo'),
+        ('signature', 'Signature'),
+        ('background', 'Background'),
+        ('other', 'Other'),
+    ]
+    template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='images')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='other')
+    image = models.ForeignKey(ImageAsset, on_delete=models.CASCADE)
+    x = models.IntegerField(default=0, help_text='Distance from LEFT edge of page, in pixels. A4 width ≈ 794px.')
+    y = models.IntegerField(default=0, help_text='Distance from TOP edge of page, in pixels. A4 height ≈ 1123px.')
+    width = models.IntegerField(default=100, help_text='Width in pixels')
+    height = models.IntegerField(default=50, help_text='Height in pixels')
+    z_index = models.IntegerField(default=10, help_text='Layer order: LOWER = further back. Set background to 0.')
+
+    class Meta:
+        ordering = ['z_index', 'role']
+
+    def __str__(self):
+        return f"{self.get_role_display()} on {self.template.name}"
+
+
+class TemplateField(models.Model):
+    """An exact-position text field, filled from an Excel column, with a fallback default."""
+    template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name='fields')
+    field_name = models.CharField(max_length=100, help_text='Excel column name to pull the value from, e.g. PHName')
+    default_value = models.CharField(max_length=255, blank=True, default='', help_text='Used when the Excel row has no value for this field')
+    font_size = models.IntegerField(default=10)
+    bold = models.BooleanField(default=False)
+    x = models.IntegerField(default=0, help_text='Distance from LEFT edge of page, in pixels')
+    y = models.IntegerField(default=0, help_text='Distance from TOP edge of page, in pixels')
+    max_width = models.IntegerField(null=True, blank=True,
+                                    help_text='Optional wrap width in pixels; leave blank for no wrapping')
+
+    class Meta:
+        ordering = ['field_name']
+
+    def __str__(self):
+        return f"{self.field_name} on {self.template.name}"

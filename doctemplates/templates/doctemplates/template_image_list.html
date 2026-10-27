@@ -1,0 +1,76 @@
+{% extends "generator/base.html" %}
+{% block title %}Template Images{% endblock %}
+
+{% block content %}
+<h2>Images on "{{ template.name }}"</h2>
+<p style="color:#666; margin-bottom:15px;">
+    Position logos, signatures, and backgrounds on this template.
+    <strong>A4 page size is 794px wide × 1123px tall.</strong>
+    X/Y = distance from the top-left corner. Width/Height = size of the image itself.
+    Example: a full-page background would be X=0, Y=0, Width=794, Height=1123.
+    A small logo might be X=40, Y=30, Width=150, Height=60.
+</p>
+
+<p><a href="{% url 'image_asset_list' %}">Manage image library →</a></p>
+
+{% if form.errors %}
+<div class="alert alert-error">
+    <strong>Could not save — please fix the following:</strong>
+    <ul>
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label for="id_role">Role</label>
+    {{ form.role }}
+    <label for="id_image">Image</label>
+    {{ form.image }}
+    <label for="id_x">X — distance from LEFT edge, in pixels (0 = flush left)</label>
+    {{ form.x }}
+    <label for="id_y">Y — distance from TOP edge, in pixels (0 = flush top)</label>
+    {{ form.y }}
+    <label for="id_width">Width — how wide the image will be, in pixels (full page width = 794)</label>
+    {{ form.width }}
+    <label for="id_height">Height — how tall the image will be, in pixels (full page height = 1123)</label>
+    {{ form.height }}
+    {% if form.z_index %}
+    <label for="id_z_index">Layer — lower number = further back. Background should be 0, logo/signature higher (e.g. 10).</label>
+    {{ form.z_index }}
+    {% endif %}
+    <button type="submit" class="btn">💾 Save — Add This Image to the Template</button>
+</form>
+
+<table>
+    <thead>
+        <tr><th>Preview</th><th>Role</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Edit</th><th>Delete</th></tr>
+    </thead>
+    <tbody>
+        {% for placed in placed_images %}
+        <tr>
+            <td><img src="{{ placed.image.image.url }}" style="max-width:60px; max-height:40px;"></td>
+            <td>{{ placed.get_role_display }}</td>
+            <td>{{ placed.x }}</td>
+            <td>{{ placed.y }}</td>
+            <td>{{ placed.width }}</td>
+            <td>{{ placed.height }}</td>
+            <td><a href="{% url 'template_image_edit' template.id placed.id %}">Edit</a></td>
+            <td><a href="{% url 'template_image_delete' template.id placed.id %}">Delete</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No images placed yet — fill in the form above and click Save.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'template_edit' template.id %}" style="display:block; margin-top:20px;">← Back to template (this does NOT save — use the button above)</a>
+{% endblock %}

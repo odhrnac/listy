@@ -11,6 +11,12 @@
   {{ form.as_p }}
   <button type="submit" name="save">Save Template</button>
   <button type="submit" name="preview">Preview</button>
+  {% if template %}
+  <p>
+      <a href="{% url 'template_image_list' template.id %}">Manage Images (logo/signature/background)</a> ·
+      <a href="{% url 'template_field_list' template.id %}">Manage Exact-Position Fields</a>
+  </p>
+  {% endif %}
   <a href="{% url 'template_list' %}">Cancel</a>
 </form>
 

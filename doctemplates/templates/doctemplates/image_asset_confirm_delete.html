@@ -1,0 +1,12 @@
+{% extends "generator/base.html" %}
+{% block title %}Delete Image{% endblock %}
+
+{% block content %}
+<h2>Delete "{{ image.title }}"?</h2>
+<img src="{{ image.image.url }}" style="max-width:200px; margin:15px 0;"><br>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn" style="background:#c0392b;">Delete</button>
+    <a href="{% url 'image_asset_list' %}" style="margin-left:15px;">Cancel</a>
+</form>
+{% endblock %}

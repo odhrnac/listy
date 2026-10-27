@@ -1,0 +1,55 @@
+{% extends "generator/base.html" %}
+{% block title %}Template Fields{% endblock %}
+
+{% block content %}
+<h2>Exact-Position Fields on "{{ template.name }}"</h2>
+<p style="color:#666; margin-bottom:15px;">
+    Place a field pulled directly from an Excel column at an exact spot on the page,
+    outside the normal flowing body text. If the Excel row has no value for this column,
+    the default value is used instead.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="id_field_name">Excel Column Name</label>
+    {{ form.field_name }}
+    <label for="id_default_value">Default Value (used if missing)</label>
+    {{ form.default_value }}
+    <label for="id_x">X (from left)</label>
+    {{ form.x }}
+    <label for="id_y">Y (from top)</label>
+    {{ form.y }}
+    <label for="id_font_size">Font Size</label>
+    {{ form.font_size }}
+    <label style="display:inline-flex; align-items:center; gap:6px; margin-top:15px;">
+        {{ form.bold }} Bold
+    </label>
+    <label for="id_max_width">Max Width (optional, for wrapping)</label>
+    {{ form.max_width }}
+    <button type="submit" class="btn">Add Field</button>
+</form>
+
+<table>
+    <thead>
+        <tr><th>Field</th><th>Default</th><th>X</th><th>Y</th><th>Size</th><th>Bold</th><th>Edit</th><th>Delete</th></tr>
+    </thead>
+    <tbody>
+        {% for field in fields %}
+        <tr>
+            <td>{{ field.field_name }}</td>
+            <td>{{ field.default_value }}</td>
+            <td>{{ field.x }}</td>
+            <td>{{ field.y }}</td>
+            <td>{{ field.font_size }}</td>
+            <td>{{ field.bold|yesno:"Yes,No" }}</td>
+            <td><a href="{% url 'template_field_edit' template.id field.id %}">Edit</a></td>
+            <td><a href="{% url 'template_field_delete' template.id field.id %}">Delete</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No fields placed yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{% url 'template_edit' template.id %}" style="display:block; margin-top:20px;">← Back to template</a>
+{% endblock %}

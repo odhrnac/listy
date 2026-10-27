@@ -1,0 +1,26 @@
+{% extends "generator/base.html" %}
+{% block title %}Edit Field{% endblock %}
+
+{% block content %}
+<h2>Edit Field on "{{ template.name }}"</h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="id_field_name">Excel Column Name</label>
+    {{ form.field_name }}
+    <label for="id_default_value">Default Value (used if missing)</label>
+    {{ form.default_value }}
+    <label for="id_x">X (from left)</label>
+    {{ form.x }}
+    <label for="id_y">Y (from top)</label>
+    {{ form.y }}
+    <label for="id_font_size">Font Size</label>
+    {{ form.font_size }}
+    <label style="display:inline-flex; align-items:center; gap:6px; margin-top:15px;">
+        {{ form.bold }} Bold
+    </label>
+    <label for="id_max_width">Max Width (optional, for wrapping)</label>
+    {{ form.max_width }}
+    <button type="submit" class="btn">Save</button>
+    <a href="{% url 'template_field_list' template.id %}" style="margin-left:15px;">Cancel</a>
+</form>
+{% endblock %}

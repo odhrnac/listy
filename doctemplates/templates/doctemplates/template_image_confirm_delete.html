@@ -1,0 +1,11 @@
+{% extends "generator/base.html" %}
+{% block title %}Delete Placed Image{% endblock %}
+
+{% block content %}
+<h2>Remove this {{ placed.get_role_display }} from "{{ template.name }}"?</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn" style="background:#c0392b;">Remove</button>
+    <a href="{% url 'template_image_list' template.id %}" style="margin-left:15px;">Cancel</a>
+</form>
+{% endblock %}
