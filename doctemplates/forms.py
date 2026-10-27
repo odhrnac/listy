@@ -11,6 +11,7 @@ class TemplateForm(forms.ModelForm):
             'html_content', 'css_content', 'is_default',
             'margin_top', 'margin_bottom', 'margin_left', 'margin_right',
             'footer_html', 'footer_top',
+            'sample_excel', 'detail_excel', 'detail_name', 'main_key', 'detail_key',
         ]
         widgets = {
             'html_content': forms.Textarea(attrs={'rows': 20, 'style': 'width:100%; font-family:monospace;'}),
@@ -23,6 +24,11 @@ class TemplateForm(forms.ModelForm):
             'footer_top': forms.NumberInput(attrs={'style': 'width: 80px;'}),
         }
 
+    # Not stored: which row of the sample Excel the preview shows
+    preview_row = forms.IntegerField(required=False, min_value=1, initial=1,
+                                     widget=forms.NumberInput(attrs={'style': 'width: 80px;'}),
+                                     help_text='Row of the sample Excel shown by Preview')
+
 class ImageAssetForm(forms.ModelForm):
     class Meta:
         model = ImageAsset
@@ -32,10 +38,10 @@ class ImageAssetForm(forms.ModelForm):
 class TemplatePlacedImageForm(forms.ModelForm):
     class Meta:
         model = TemplatePlacedImage
-        fields = ['role', 'image', 'x', 'y', 'width', 'height', 'z_index']
+        fields = ['role', 'image', 'x', 'y', 'width', 'height', 'z_index', 'page']
 
 
 class TemplateFieldForm(forms.ModelForm):
     class Meta:
         model = TemplateField
-        fields = ['field_name', 'default_value', 'x', 'y', 'font_size', 'bold', 'max_width']
+        fields = ['field_name', 'default_value', 'x', 'y', 'font_size', 'bold', 'max_width', 'page']

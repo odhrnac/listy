@@ -46,13 +46,15 @@
     {% if form.z_index %}
     <label for="id_z_index">Layer — lower number = further back. Background should be 0, logo/signature higher (e.g. 10).</label>
     {{ form.z_index }}
+    <label for="id_page">Pages — on which pages of a multi-page letter (logo/background: every page)</label>
+    {{ form.page }}
     {% endif %}
     <button type="submit" class="btn">💾 Save — Add This Image to the Template</button>
 </form>
 
 <table>
     <thead>
-        <tr><th>Preview</th><th>Role</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Edit</th><th>Delete</th></tr>
+        <tr><th>Preview</th><th>Role</th><th>X</th><th>Y</th><th>W</th><th>H</th><th>Pages</th><th>Edit</th><th>Delete</th></tr>
     </thead>
     <tbody>
         {% for placed in placed_images %}
@@ -63,11 +65,12 @@
             <td>{{ placed.y }}</td>
             <td>{{ placed.width }}</td>
             <td>{{ placed.height }}</td>
+            <td>{{ placed.get_page_display }}</td>
             <td><a href="{% url 'template_image_edit' template.id placed.id %}">Edit</a></td>
             <td><a href="{% url 'template_image_delete' template.id placed.id %}">Delete</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="8">No images placed yet — fill in the form above and click Save.</td></tr>
+        <tr><td colspan="9">No images placed yet — fill in the form above and click Save.</td></tr>
         {% endfor %}
     </tbody>
 </table>

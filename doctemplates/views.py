@@ -1,12 +1,27 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.template import Template as DjangoTemplate, Context
+from django.utils.html import escape
 
 from .forms import TemplateForm, ImageAssetForm, TemplatePlacedImageForm, TemplateFieldForm
 from .models import Template, ImageAsset, TemplatePlacedImage, TemplateField #,GenerationJob, GeneratedPDF, UserProfile,
+from .sample_data import excel_rows, build_context
 
 from config import  get_letter_date, MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM
 
+# Used for the preview when the template has no sample Excel
+BUILTIN_SAMPLE_DATA = {
+    'PHName': 'Jón Jónsson',
+    'PHAddrPermStreet': 'Laugavegur',
+    'PHAddrPermNumber': '100',
+    'PHAddrPermZIP': '101',
+    'PHAddrPermTown': 'Reykjavík',
+    'ContractNumber': 'C-12345',
+    'PremiumOwed': '1906.81',
+    'PHGenderCode': 'M',
+    'RegionCode': 'ISreg',
+}
 
 
 @login_required
@@ -26,7 +41,7 @@ def template_edit(request, template_id=None):
     preview_html = None
 
     if request.method == 'POST':
-        form = TemplateForm(request.POST, instance=template)
+        form = TemplateForm(request.POST, request.FILES, instance=template)
         if form.is_valid():
             # If the user clicked "Preview", don't save yet; just render preview
             if 'preview' in request.POST:
@@ -34,7 +49,7 @@ def template_edit(request, template_id=None):
                 temp_template = form.save(commit=False)
                 if template:
                     temp_template.id = template.id  # to keep pk for rendered context
-                preview_html = _render_preview(temp_template)
+                preview_html = _render_preview(temp_template, form.cleaned_data.get('preview_row') or 1)
             else:
                 form.save()
                 return redirect('template_list')
@@ -55,25 +70,29 @@ def template_edit(request, template_id=None):
         'preview_html': preview_html,
     })
 
-def _render_preview(template):
-    """Render template with sample data inside an A4-sized preview box (pixels),
-    including placed images (logo/signature/background), exact-position fields, and footer."""
-    sample_data = {
-        'PHName': 'Jón Jónsson',
-        'PHAddrPermStreet': 'Laugavegur',
-        'PHAddrPermNumber': '100',
-        'PHAddrPermZIP': '101',
-        'PHAddrPermTown': 'Reykjavík',
-        'ContractNumber': 'C-12345',
-        'PremiumOwed': '1906.81',
-        'PHGenderCode': 'M',
-        'RegionCode': 'ISreg',
-        'letter_date': get_letter_date(),
-    }
+
+def _preview_data(template, preview_row):
+    """Context for the preview: chosen row of the sample Excel (with its second-Excel rows), or built-in data."""
+    rows = excel_rows(template.sample_excel)
+    if not rows:
+        data = dict(BUILTIN_SAMPLE_DATA, letter_date=get_letter_date())
+        return data, 'Built-in sample data (upload a sample Excel to preview real columns)'
+    index = min(max(preview_row, 1), len(rows)) - 1
+    context = build_context(template, rows[index], excel_rows(template.detail_excel))
+    context['letter_date'] = get_letter_date()
+    info = f'Sample Excel row {index + 1} of {len(rows)}'
+    if template.detail_excel:
+        info += f' · {len(context[template.detail_name or "details"])} linked row(s) from the second Excel'
+    return context, info
+
+
+def _render_preview(template, preview_row=1):
+    """Render template with sample data as A4 pages (pixels), including placed images
+    (logo/signature/background), exact-position fields and footer on each page.
+    The body is split into pages in the browser by doctemplates/preview.js."""
     try:
-        from django.template import Template as DjangoTemplate, Context
-        django_template = DjangoTemplate(template.html_content)
-        body_html = django_template.render(Context(sample_data))
+        data, info = _preview_data(template, preview_row)
+        body_html = DjangoTemplate(template.html_content).render(Context(data))
         style_block = f"<style>{template.css_content}</style>"
 
         # Margins are still stored in points (pt) from the old system; convert to px for display (1pt = 1.333px)
@@ -89,7 +108,7 @@ def _render_preview(template):
         if template.pk:
             for placed in template.images.all():
                 images_html += f"""
-                <img src="{placed.image.image.url}" style="
+                <img data-page="{placed.page}" src="{placed.image.image.url}" style="
                     position: absolute;
                     left: {placed.x}px;
                     top: {placed.y}px;
@@ -100,11 +119,11 @@ def _render_preview(template):
                 """
 
             for field in template.fields.all():
-                value = sample_data.get(field.field_name, field.default_value)
+                value = escape(data.get(field.field_name) or field.default_value)
                 bold_style = 'font-weight: bold;' if field.bold else ''
                 width_style = f'width: {field.max_width}px;' if field.max_width else ''
                 fields_html += f"""
-                <div style="
+                <div data-page="{field.page}" style="
                     position: absolute;
                     left: {field.x}px;
                     top: {field.y}px;
@@ -116,8 +135,7 @@ def _render_preview(template):
                 """
 
             if template.footer_html:
-                django_footer = DjangoTemplate(template.footer_html)
-                footer_body = django_footer.render(Context(sample_data))
+                footer_body = DjangoTemplate(template.footer_html).render(Context(data))
                 footer_html = f"""
                 <div style="
                     position: absolute;
@@ -131,40 +149,46 @@ def _render_preview(template):
                 """
 
         return f"""
-        <div style="
-            width: 794px;
-            height: 1123px;
-            margin: 20px auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            box-sizing: border-box;
-            position: relative;
-            overflow: hidden;
-        ">
-            {style_block}
-            {images_html}
-            {fields_html}
-            {footer_html}
-            <div style="
-                position: absolute;
-                top: {mt}px;
-                left: {ml}px;
-                right: {mr}px;
-                bottom: {mb}px;
-                border: 1px dotted #aaa;
-                overflow: visible;
-                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                font-size: 10pt;
-                line-height: 1.5;
-                color: #333;
-                z-index: 10;
+        <p class="help-text">{escape(info)}</p>
+        {style_block}
+        <div class="tpl-preview">
+          <template class="tpl-page">
+            <p class="tpl-page-label" style="text-align:center; font-size:12px; color:#888; margin-top:20px;"></p>
+            <div class="tpl-page-box" style="
+                width: 794px;
+                height: 1123px;
+                margin: 6px auto 0;
+                background: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                box-sizing: border-box;
+                position: relative;
+                overflow: hidden;
             ">
-                {body_html}
+                {images_html}
+                {fields_html}
+                {footer_html}
+                <div class="tpl-body" style="
+                    position: absolute;
+                    top: {mt}px;
+                    left: {ml}px;
+                    right: {mr}px;
+                    bottom: {mb}px;
+                    border: 1px dotted #aaa;
+                    overflow: visible;
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                    font-size: 10pt;
+                    line-height: 1.5;
+                    color: #333;
+                    z-index: 10;
+                "></div>
             </div>
+          </template>
+          <div class="tpl-source" style="display: none;">{body_html}</div>
+          <div class="tpl-pages"></div>
         </div>
         """
     except Exception as e:
-        return f'<p style="color:red;">Preview error: {e}</p>'
+        return f'<p style="color:red;">Preview error: {escape(e)}</p>'
 
 @login_required
 def template_delete(request, template_id):

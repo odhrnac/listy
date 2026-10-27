@@ -20,6 +20,8 @@
     </label>
     <label for="id_max_width">Max Width (optional, for wrapping)</label>
     {{ form.max_width }}
+    <label for="id_page">Pages — on which pages of a multi-page letter</label>
+    {{ form.page }}
     <button type="submit" class="btn">Save</button>
     <a href="{% url 'template_field_list' template.id %}" style="margin-left:15px;">Cancel</a>
 </form>

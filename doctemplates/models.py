@@ -1,7 +1,24 @@
+import os
+
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+
+def private_storage():
+    """Storage outside MEDIA_ROOT, so sample Excel files (customer data) are never served at /media/."""
+    return FileSystemStorage(location=os.path.join(settings.BASE_DIR, 'private_media'))
+
+
+PAGE_CHOICES = [
+    ('all', 'Every page'),
+    ('first', 'First page only'),
+    ('last', 'Last page only'),
+]
+
 
 class Template(models.Model):
     """Shared PDF template – any logged‑in user can use it."""
@@ -23,6 +40,19 @@ class Template(models.Model):
     footer_html = models.TextField(blank=True, default='', help_text='Footer content, placed below the bottom margin')
     footer_top = models.IntegerField(default=30,
                                      help_text='Distance from bottom of page to top of footer, in points (pt)')
+
+    # Sample data for the preview; the real data comes from the Excel files uploaded when generating
+    sample_excel = models.FileField(upload_to='template_samples/', storage=private_storage, blank=True,
+                                    help_text='Main Excel with sample data for the preview (one row = one letter)')
+    detail_excel = models.FileField(upload_to='template_samples/', storage=private_storage, blank=True,
+                                    help_text='Optional second Excel with several rows per letter, e.g. insured persons')
+    detail_name = models.CharField(max_length=50, blank=True, default='details',
+                                   help_text='Name of the list of second-Excel rows in the template, '
+                                             'e.g. insured → {% for person in insured %}')
+    main_key = models.CharField(max_length=100, blank=True, default='',
+                                help_text='Column in the main Excel that links the rows, e.g. Contract_number')
+    detail_key = models.CharField(max_length=100, blank=True, default='',
+                                  help_text='Matching column in the second Excel, e.g. IdNum')
 
     class Meta:
         ordering = ['-is_default', '-updated_at']
@@ -57,6 +87,8 @@ class TemplatePlacedImage(models.Model):
     width = models.IntegerField(default=100, help_text='Width in pixels')
     height = models.IntegerField(default=50, help_text='Height in pixels')
     z_index = models.IntegerField(default=10, help_text='Layer order: LOWER = further back. Set background to 0.')
+    page = models.CharField(max_length=10, choices=PAGE_CHOICES, default='all',
+                            help_text='On which pages of a multi-page letter the image is shown')
 
     class Meta:
         ordering = ['z_index', 'role']
@@ -76,6 +108,8 @@ class TemplateField(models.Model):
     y = models.IntegerField(default=0, help_text='Distance from TOP edge of page, in pixels')
     max_width = models.IntegerField(null=True, blank=True,
                                     help_text='Optional wrap width in pixels; leave blank for no wrapping')
+    page = models.CharField(max_length=10, choices=PAGE_CHOICES, default='all',
+                            help_text='On which pages of a multi-page letter the field is shown')
 
     class Meta:
         ordering = ['field_name']

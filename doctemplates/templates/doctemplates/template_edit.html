@@ -1,4 +1,5 @@
 {% extends "generator/base.html" %}
+{% load static %}
 {% block title %}
   {% if template %}Edit Template{% else %}Create Template{% endif %}
 {% endblock %}
@@ -12,7 +13,7 @@
 
 <h2>{% if template %}Edit: {{ template.name }}{% else %}Create New Template{% endif %}</h2>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit" name="save">Save Template</button>
@@ -31,12 +32,17 @@
   <div style="margin-top: 20px; overflow-x: auto;">
     {{ preview_html|safe }}
   </div>
+  <script src="{% static 'doctemplates/preview.js' %}"></script>
 {% endif %}
 
 <p style="margin-top:20px; font-size:0.9em; color:#555;">
   Use <code>{% templatetag openvariable %} field_name {% templatetag closevariable %}</code> for Excel column values.
   Available: <code>PHName</code>, <code>PHAddrPermStreet</code>, <code>PHAddrPermNumber</code>, <code>PHAddrPermZIP</code>, <code>PHAddrPermTown</code>, <code>ContractNumber</code>, <code>PremiumOwed</code>, <code>PHGenderCode</code>, <code>RegionCode</code>, <code>letter_date</code>.
-  <br>Amounts: <code>{% templatetag openvariable %} PremiumOwed|money {% templatetag closevariable %}</code> gives <code>1 906.81</code>.
+  <br>Amounts: <code>{% templatetag openvariable %} PremiumOwed|money {% templatetag closevariable %}</code> gives <code>1 906.81</code>,
+  <code>|money:0</code> gives <code>1 907</code>, <code>|money:"auto"</code> drops <code>.00</code>.
+  Dates from Excel: <code>|excel_date</code> gives <code>31.05.2021</code>.
+  <br>Columns with <code>-</code> or spaces: write <code>_</code> instead, e.g. <code>Death-Cover</code> → <code>Death_Cover</code>.
+  <br>Multi-page letters: <code>&lt;div style="break-before: page"&gt;</code> starts a new page; text that does not fit continues on the next page.
 </p>
 
 {% endblock %}

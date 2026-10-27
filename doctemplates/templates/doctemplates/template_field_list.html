@@ -26,12 +26,14 @@
     </label>
     <label for="id_max_width">Max Width (optional, for wrapping)</label>
     {{ form.max_width }}
+    <label for="id_page">Pages — on which pages of a multi-page letter</label>
+    {{ form.page }}
     <button type="submit" class="btn">Add Field</button>
 </form>
 
 <table>
     <thead>
-        <tr><th>Field</th><th>Default</th><th>X</th><th>Y</th><th>Size</th><th>Bold</th><th>Edit</th><th>Delete</th></tr>
+        <tr><th>Field</th><th>Default</th><th>X</th><th>Y</th><th>Size</th><th>Bold</th><th>Pages</th><th>Edit</th><th>Delete</th></tr>
     </thead>
     <tbody>
         {% for field in fields %}
@@ -42,11 +44,12 @@
             <td>{{ field.y }}</td>
             <td>{{ field.font_size }}</td>
             <td>{{ field.bold|yesno:"Yes,No" }}</td>
+            <td>{{ field.get_page_display }}</td>
             <td><a href="{% url 'template_field_edit' template.id field.id %}">Edit</a></td>
             <td><a href="{% url 'template_field_delete' template.id field.id %}">Delete</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="8">No fields placed yet.</td></tr>
+        <tr><td colspan="9">No fields placed yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>

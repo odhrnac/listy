@@ -36,6 +36,8 @@
     {{ form.height }}
     <label for="id_z_index">Layer — lower number = further back. Background should be 0.</label>
     {{ form.z_index }}
+    <label for="id_page">Pages — on which pages of a multi-page letter (logo/background: every page)</label>
+    {{ form.page }}
     <button type="submit" class="btn">💾 Save</button>
     <a href="{% url 'template_image_list' template.id %}" style="margin-left:15px;">Cancel (does not save)</a>
 </form>
