@@ -45,3 +45,32 @@ class TemplateFieldForm(forms.ModelForm):
     class Meta:
         model = TemplateField
         fields = ['field_name', 'default_value', 'x', 'y', 'font_size', 'bold', 'max_width', 'page']
+
+class GenerateForm(forms.Form):
+    """v2: generate letters from a template."""
+    template = forms.ModelChoiceField(queryset=Template.objects.none(), label='Template')
+    excel_file = forms.FileField(label='Excel file (.xlsx)')
+    detail_excel_file = forms.FileField(label='Second Excel file (.xlsx)', required=False)
+    letter_date = forms.DateField(
+        label='Letter Date',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        help_text='Leave blank for today\'s date.',
+    )
+    encrypt_pdfs = forms.BooleanField(
+        label='Encrypt PDFs with password',
+        required=False,
+        help_text='Requires a "Password" column in the Excel file.',
+    )
+
+    def __init__(self, *args, templates=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['template'].queryset = templates if templates is not None else Template.objects.none()
+
+    def clean(self):
+        data = super().clean()
+        template = data.get('template')
+        if template and template.main_key and template.detail_key and not data.get('detail_excel_file'):
+            self.add_error('detail_excel_file',
+                           f'This template needs a second Excel (rows linked by {template.detail_key}).')
+        return data

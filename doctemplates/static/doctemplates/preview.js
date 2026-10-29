@@ -59,7 +59,12 @@
     }
 
     function run() {
-        document.querySelectorAll('.tpl-preview').forEach(paginate);
+        try {
+            document.querySelectorAll('.tpl-preview').forEach(paginate);
+        } finally {
+            // The editor (to size the preview frame) and the PDF generator wait for this mark
+            document.documentElement.dataset.paginated = '1';
+        }
     }
 
     // Page breaks depend on text height, so load the letter's fonts (@font-face in the template CSS) first.

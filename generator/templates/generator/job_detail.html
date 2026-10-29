@@ -2,7 +2,7 @@
 {% block title %}Job Details{% endblock %}
 
 {% block content %}
-<h2>{{ job.country_code }} / {{ job.document_type }}</h2>
+<h2>{{ job.country_code }} / {{ job.document_type }}{% if job.template_name %} <span style="font-size: 16px; color: #888;">(v2 · {{ job.template_name }})</span>{% endif %}</h2>
 <p style="color: #666; margin-bottom: 5px;">Generated: {{ job.created_at|date:"d.m.Y H:i" }} — {{ job.pdf_count }} file{{ job.pdf_count|pluralize }}</p>
 
 {% if not expired %}

@@ -30,6 +30,8 @@ class GenerationJob(models.Model):
     signer_key = models.CharField(max_length=10, blank=True, default='')
     excel_file = models.FileField(upload_to='uploads/')
     sheet_name = models.CharField(max_length=100, blank=True, default='')
+    template_name = models.CharField(max_length=100, blank=True, default='',
+                                     help_text='Set for letters generated from a template (v2)')
 
     # Results
     pdf_count = models.IntegerField(default=0)

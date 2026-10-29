@@ -5,6 +5,7 @@ from django.template import Template as DjangoTemplate, Context
 from django.test import SimpleTestCase
 
 from readers import read_excel
+from .jobs import letter_filename, _unique
 from .sample_data import with_aliases, linked_rows, build_context
 from .starter_templates import read_starter_file
 from .starter_templates import is_annual_letter_samples as samples
@@ -106,3 +107,26 @@ class AnnualLetterTemplateTests(SimpleTestCase):
         self.assertNotIn('Once a month:', html)
         self.assertIn('45.90 EUR', html)  # regular premium with decimals only for Life Protector
         self.assertIn('Critical illnesses insurance:', html)
+
+
+class LetterFilenameTests(SimpleTestCase):
+    template = SimpleNamespace(document_type='NOT')
+
+    def test_from_attachment_name_column(self):
+        self.assertEqual(letter_filename(self.template, {'AttachmentName': 'AL_IS_123'}, 1, '01.06.2025'),
+                         'AL_IS_123.pdf')
+
+    def test_default_name(self):
+        self.assertEqual(letter_filename(self.template, {'ContractNumber': '17/18'}, 1, '01.06.2025'),
+                         'NOT_17_18_01062025.pdf')
+        self.assertEqual(letter_filename(self.template, {}, 3, '01.06.2025'), 'NOT_row_3_01062025.pdf')
+
+    def test_never_contains_a_path(self):
+        name = letter_filename(self.template, {'AttachmentName': '../../etc/passwd'}, 1, '01.06.2025')
+        self.assertNotIn('/', name)
+        self.assertFalse(name.startswith('.'))
+
+    def test_duplicates_get_a_number(self):
+        used = set()
+        self.assertEqual(_unique('a.pdf', used), 'a.pdf')
+        self.assertEqual(_unique('a.pdf', used), 'a_2.pdf')

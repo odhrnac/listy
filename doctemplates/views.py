@@ -1,14 +1,23 @@
+import importlib.util
+import os
+import threading
+import uuid
+from datetime import date
 
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.template import Template as DjangoTemplate, Context
-from django.utils.html import escape
 
-from .forms import TemplateForm, ImageAssetForm, TemplatePlacedImageForm, TemplateFieldForm
-from .models import Template, ImageAsset, TemplatePlacedImage, TemplateField #,GenerationJob, GeneratedPDF, UserProfile,
+from generator.models import GenerationJob, UserProfile
+from .forms import TemplateForm, ImageAssetForm, TemplatePlacedImageForm, TemplateFieldForm, GenerateForm
+from .jobs import process_job
+from .models import Template, ImageAsset, TemplatePlacedImage, TemplateField
+from .pdf_renderer import PLAYWRIGHT_MISSING
+from .rendering import letter_document
 from .sample_data import excel_rows, build_context
 
-from config import  get_letter_date, MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM
+from config import get_letter_date, OUTPUT_DIR
+from readers import read_excel
 
 # Used for the preview when the template has no sample Excel
 BUILTIN_SAMPLE_DATA = {
@@ -38,7 +47,7 @@ def template_edit(request, template_id=None):
     else:
         template = None
 
-    preview_html = None
+    preview = None
 
     if request.method == 'POST':
         form = TemplateForm(request.POST, request.FILES, instance=template)
@@ -49,7 +58,7 @@ def template_edit(request, template_id=None):
                 temp_template = form.save(commit=False)
                 if template:
                     temp_template.id = template.id  # to keep pk for rendered context
-                preview_html = _render_preview(temp_template, form.cleaned_data.get('preview_row') or 1)
+                preview = _render_preview(temp_template, form.cleaned_data.get('preview_row') or 1)
             else:
                 form.save()
                 return redirect('template_list')
@@ -60,14 +69,14 @@ def template_edit(request, template_id=None):
                     html_content=request.POST.get('html_content', ''),
                     css_content=request.POST.get('css_content', ''),
                 )
-                preview_html = _render_preview(temp_template)
+                preview = _render_preview(temp_template)
     else:
         form = TemplateForm(instance=template)
 
     return render(request, 'doctemplates/template_edit.html', {
         'form': form,
         'template': template,
-        'preview_html': preview_html,
+        'preview': preview,
     })
 
 
@@ -87,108 +96,12 @@ def _preview_data(template, preview_row):
 
 
 def _render_preview(template, preview_row=1):
-    """Render template with sample data as A4 pages (pixels), including placed images
-    (logo/signature/background), exact-position fields and footer on each page.
-    The body is split into pages in the browser by doctemplates/preview.js."""
+    """Preview of the letter filled with sample data: (info line, HTML document shown in an iframe, error)."""
     try:
         data, info = _preview_data(template, preview_row)
-        body_html = DjangoTemplate(template.html_content).render(Context(data))
-        style_block = f"<style>{template.css_content}</style>"
-
-        # Margins are still stored in points (pt) from the old system; convert to px for display (1pt = 1.333px)
-        mt = (template.margin_top if template.margin_top is not None else MARGIN_TOP) * 1.333
-        mb = (template.margin_bottom if template.margin_bottom is not None else MARGIN_BOTTOM) * 1.333
-        ml = (template.margin_left if template.margin_left is not None else MARGIN_LEFT) * 1.333
-        mr = (template.margin_right if template.margin_right is not None else MARGIN_RIGHT) * 1.333
-
-        images_html = ''
-        fields_html = ''
-        footer_html = ''
-
-        if template.pk:
-            for placed in template.images.all():
-                images_html += f"""
-                <img data-page="{placed.page}" src="{placed.image.image.url}" style="
-                    position: absolute;
-                    left: {placed.x}px;
-                    top: {placed.y}px;
-                    width: {placed.width}px;
-                    height: {placed.height}px;
-                    z-index: {placed.z_index};
-                ">
-                """
-
-            for field in template.fields.all():
-                value = escape(data.get(field.field_name) or field.default_value)
-                bold_style = 'font-weight: bold;' if field.bold else ''
-                width_style = f'width: {field.max_width}px;' if field.max_width else ''
-                fields_html += f"""
-                <div data-page="{field.page}" style="
-                    position: absolute;
-                    left: {field.x}px;
-                    top: {field.y}px;
-                    font-size: {field.font_size}pt;
-                    {bold_style}
-                    {width_style}
-                    z-index: 6;
-                ">{value}</div>
-                """
-
-            if template.footer_html:
-                footer_body = DjangoTemplate(template.footer_html).render(Context(data))
-                footer_html = f"""
-                <div style="
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    bottom: {template.footer_top}px;
-                    font-size: 8pt;
-                    color: #666;
-                    z-index: 6;
-                ">{footer_body}</div>
-                """
-
-        return f"""
-        <p class="help-text">{escape(info)}</p>
-        {style_block}
-        <div class="tpl-preview">
-          <template class="tpl-page">
-            <p class="tpl-page-label" style="text-align:center; font-size:12px; color:#888; margin-top:20px;"></p>
-            <div class="tpl-page-box" style="
-                width: 794px;
-                height: 1123px;
-                margin: 6px auto 0;
-                background: white;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                box-sizing: border-box;
-                position: relative;
-                overflow: hidden;
-            ">
-                {images_html}
-                {fields_html}
-                {footer_html}
-                <div class="tpl-body" style="
-                    position: absolute;
-                    top: {mt}px;
-                    left: {ml}px;
-                    right: {mr}px;
-                    bottom: {mb}px;
-                    border: 1px dotted #aaa;
-                    overflow: visible;
-                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-                    font-size: 10pt;
-                    line-height: 1.5;
-                    color: #333;
-                    z-index: 10;
-                "></div>
-            </div>
-          </template>
-          <div class="tpl-source" style="display: none;">{body_html}</div>
-          <div class="tpl-pages"></div>
-        </div>
-        """
+        return info, letter_document(template, data), None
     except Exception as e:
-        return f'<p style="color:red;">Preview error: {escape(e)}</p>'
+        return None, None, f'Preview error: {e}'
 
 @login_required
 def template_delete(request, template_id):
@@ -340,3 +253,109 @@ def template_field_delete(request, template_id, field_id):
         'template': template,
         'field': field,
     })
+
+
+# ── v2: generating letters from a template ──
+
+@login_required
+def generate_v2(request):
+    """Generate letters from a template; the job then shows up in History like the old generator's jobs."""
+    templates = _templates_for(request.user)
+    if request.method == 'POST':
+        form = GenerateForm(request.POST, request.FILES, templates=templates)
+        if form.is_valid():
+            error = _start_v2_job(request, form)
+            if not error:
+                return redirect('history')
+            form.add_error(None, error)
+    else:
+        form = GenerateForm(templates=templates)
+    return render(request, 'doctemplates/generate.html', {'form': form, 'templates': templates})
+
+
+def _templates_for(user):
+    """Templates of the countries the user may generate letters for (country permissions in the admin)."""
+    try:
+        allowed = user.profile.get_country_list()
+    except UserProfile.DoesNotExist:
+        allowed = []
+    ids = [t.id for t in Template.objects.all() if t.country_code.strip().upper() in allowed]
+    return Template.objects.filter(id__in=ids).order_by('country_code', 'name')
+
+
+def _start_v2_job(request, form):
+    """Check the uploaded Excels and start generating in a background thread. Returns an error message or None."""
+    if importlib.util.find_spec('playwright') is None:
+        return PLAYWRIGHT_MISSING
+
+    template = form.cleaned_data['template']
+    letter_date = (form.cleaned_data.get('letter_date') or date.today()).strftime('%d.%m.%Y')
+    encrypt_pdfs = form.cleaned_data.get('encrypt_pdfs', False)
+    needs_detail = bool(template.main_key and template.detail_key)
+
+    job_id = uuid.uuid4().hex[:8]
+    upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+    main_path = _save_upload(form.cleaned_data['excel_file'], upload_dir, job_id)
+    detail_path = (_save_upload(form.cleaned_data['detail_excel_file'], upload_dir, f'{job_id}_detail')
+                   if needs_detail else None)
+
+    try:
+        letter_count = _check_excels(template, main_path, detail_path, encrypt_pdfs)
+    except Exception as e:
+        for path in (main_path, detail_path):
+            if path and os.path.exists(path):
+                os.remove(path)
+        return str(e) if isinstance(e, ValueError) else f'Error reading Excel: {e}'
+
+    job = GenerationJob.objects.create(
+        user=request.user,
+        country_code=template.country_code[:5],
+        document_type=(template.document_type or 'v2')[:20],
+        template_name=template.name,
+        excel_file=f"uploads/{os.path.basename(main_path)}",
+        output_dir=job_id,
+        pdf_count=letter_count,
+        status='processing',
+    )
+    os.makedirs(os.path.join(OUTPUT_DIR, job_id), exist_ok=True)
+
+    threading.Thread(
+        target=process_job,
+        args=(job.id, template.id, main_path, detail_path, letter_date, encrypt_pdfs),
+        daemon=True,
+    ).start()
+    return None
+
+
+def _save_upload(uploaded, upload_dir, prefix):
+    path = os.path.join(upload_dir, f"{prefix}_{os.path.basename(uploaded.name)}")
+    with open(path, 'wb') as f:
+        for chunk in uploaded.chunks():
+            f.write(chunk)
+    return path
+
+
+def _check_excels(template, main_path, detail_path, encrypt_pdfs):
+    """Number of letters in the main Excel. Raises ValueError with a message for the user if the files do not fit."""
+    rows = read_excel(main_path)
+    if not rows:
+        raise ValueError('No data rows found in the Excel file.')
+
+    if detail_path:
+        if template.main_key not in rows[0]:
+            raise ValueError(f'The Excel file has no "{template.main_key}" column (it links the second Excel).')
+        detail_rows = read_excel(detail_path)
+        if detail_rows and template.detail_key not in detail_rows[0]:
+            raise ValueError(f'The second Excel file has no "{template.detail_key}" column.')
+
+    if encrypt_pdfs:
+        if 'Password' not in rows[0]:
+            raise ValueError('Encryption is enabled but the Excel file has no "Password" column.')
+        missing = [str(row.get('ContractNumber') or row.get('Contract_number') or f'row {i}')
+                   for i, row in enumerate(rows, start=1) if not row.get('Password', '').strip()]
+        if missing:
+            suffix = f' and {len(missing) - 10} more...' if len(missing) > 10 else ''
+            raise ValueError(f'Encryption is enabled but passwords are missing for: {", ".join(missing[:10])}{suffix}')
+
+    return len(rows)

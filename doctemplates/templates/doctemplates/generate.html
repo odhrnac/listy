@@ -1,0 +1,90 @@
+{% extends "generator/base.html" %}
+{% block title %}Generate PDFs (v2){% endblock %}
+
+{% block content %}
+<h2>Generate PDFs from a Template (v2)</h2>
+<p class="help-text" style="margin-bottom: 10px;">
+    Letters are made from the templates in the <a href="{% url 'template_list' %}">template editor</a>,
+    exactly as its preview shows them. The old generator is still under <a href="{% url 'upload' %}">Upload</a>.
+</p>
+
+{% if form.non_field_errors %}
+    <div class="alert alert-error">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
+{% elif form.errors %}
+    <div class="alert alert-error">Please fix the errors below.</div>
+{% endif %}
+
+{% if not templates %}
+    <div class="alert alert-error">
+        No templates for your countries yet. Create one in the <a href="{% url 'template_list' %}">template editor</a>
+        (an administrator sets which countries you may use).
+    </div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label for="id_template">Template</label>
+    <select name="template" id="id_template">
+        {% for t in templates %}
+            <option value="{{ t.id }}"
+                    data-detail="{% if t.main_key and t.detail_key %}1{% endif %}"
+                    data-main-key="{{ t.main_key }}" data-detail-key="{{ t.detail_key }}" data-detail-name="{{ t.detail_name }}"
+                    {% if form.template.value|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>
+                {{ t.country_code }} – {{ t.name }}
+            </option>
+        {% endfor %}
+    </select>
+    {% for error in form.template.errors %}<p class="help-text" style="color:#721c24;">{{ error }}</p>{% endfor %}
+
+    <label for="id_excel_file">Excel File (.xlsx)</label>
+    <input type="file" name="excel_file" id="id_excel_file" accept=".xlsx" required>
+    <p class="help-text">One row = one letter.</p>
+    {% for error in form.excel_file.errors %}<p class="help-text" style="color:#721c24;">{{ error }}</p>{% endfor %}
+
+    <div id="detail_wrapper">
+        <label for="id_detail_excel_file">Second Excel File (.xlsx)</label>
+        <input type="file" name="detail_excel_file" id="id_detail_excel_file" accept=".xlsx">
+        <p class="help-text" id="detail_help"></p>
+        {% for error in form.detail_excel_file.errors %}<p class="help-text" style="color:#721c24;">{{ error }}</p>{% endfor %}
+    </div>
+
+    <label for="id_letter_date">Letter Date</label>
+    <input type="date" name="letter_date" id="id_letter_date" value="{{ form.letter_date.value|default_if_none:'' }}">
+    <p class="help-text">Leave blank for today's date.</p>
+
+    <div style="margin-top: 15px;">
+        <label style="display: inline; font-weight: normal; cursor: pointer;">
+            <input type="checkbox" name="encrypt_pdfs" id="id_encrypt_pdfs" style="width: auto; margin-right: 8px;" {% if form.encrypt_pdfs.value %}checked{% endif %}>
+            <strong>Encrypt PDFs with password</strong>
+        </label>
+        <p class="help-text">Requires a "Password" column in the Excel file. Each row must have a password.</p>
+    </div>
+
+    <p class="help-text" style="margin-top: 15px;">
+        PDF file names come from the <code>AttachmentName</code> (or <code>PDF</code>) column, otherwise TYPE_contract_date.pdf.
+    </p>
+
+    <button type="submit" class="btn" {% if not templates %}disabled{% endif %}>Generate PDFs</button>
+</form>
+
+<script>
+    // Show the second Excel only for templates that use one (e.g. insured persons)
+    const templateSelect = document.getElementById('id_template');
+    const detailWrapper = document.getElementById('detail_wrapper');
+    const detailHelp = document.getElementById('detail_help');
+
+    function updateDetail() {
+        const option = templateSelect.selectedOptions[0];
+        const needsDetail = option && option.dataset.detail === '1';
+        detailWrapper.style.display = needsDetail ? 'block' : 'none';
+        if (needsDetail) {
+            detailHelp.textContent = `Several rows per letter (template list "${option.dataset.detailName}"), ` +
+                `linked by ${option.dataset.detailKey} = ${option.dataset.mainKey} of the first Excel.`;
+        }
+    }
+
+    templateSelect.addEventListener('change', updateDetail);
+    updateDetail();
+</script>
+{% endblock %}

@@ -3,6 +3,8 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
+    path('v2/', views.generate_v2, name='generate_v2'),
+
     path('templates/', views.template_list, name='template_list'),
     path('templates/create/', views.template_edit, name='template_create'),
     path('templates/<int:template_id>/edit/', views.template_edit, name='template_edit'),

@@ -11,10 +11,9 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 
-from pypdf import PdfReader, PdfWriter
-
 from .forms import UploadForm
 from .models import GenerationJob, GeneratedPDF, UserProfile
+from .pdf_tools import encrypt_pdf
 
 from config import OUTPUT_DIR, get_letter_date, set_letter_date, MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM
 from readers import read_excel
@@ -210,15 +209,7 @@ def _process_job(job_id, country_code, doc_type, signer_raw, sheet_name,
             if encrypt_pdfs:
                 pdf_password = row_data.get("Password", "").strip()
                 if pdf_password:
-                    encrypted_path = output_path + ".enc"
-                    reader = PdfReader(output_path)
-                    writer = PdfWriter()
-                    for page in reader.pages:
-                        writer.add_page(page)
-                    writer.encrypt(pdf_password, algorithm="AES-256-R5")
-                    with open(encrypted_path, "wb") as ef:
-                        writer.write(ef)
-                    os.replace(encrypted_path, output_path)
+                    encrypt_pdf(output_path, pdf_password)
 
             GeneratedPDF.objects.create(
                 job=job,

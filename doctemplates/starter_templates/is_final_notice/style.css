@@ -2,7 +2,7 @@
 @font-face { font-family: 'NovisHN'; src: url('/static/fonts/HelveticaNeueLTCom-Roman.ttf'); font-weight: bold; }
 .nl, .nl-footer { font-family: 'NovisHN', Helvetica, Arial, sans-serif; color: #767171; }
 .nl { font-size: 10pt; line-height: 14pt; }
-.nl b { font-weight: bold; -webkit-text-stroke: 0.35px currentColor; }
+.nl b { font-weight: bold; }
 .nl-head { width: 100%; border-collapse: collapse; margin: 0; }
 .nl-head td { vertical-align: top; padding: 0; border: none; font-size: 10pt; line-height: 14pt; }
 .nl-left { width: 383px; }

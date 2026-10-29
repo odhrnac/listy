@@ -1,5 +1,4 @@
 {% extends "generator/base.html" %}
-{% load static %}
 {% block title %}
   {% if template %}Edit Template{% else %}Create Template{% endif %}
 {% endblock %}
@@ -27,12 +26,30 @@
   <a href="{% url 'template_list' %}">Cancel</a>
 </form>
 
-{% if preview_html %}
+{% if preview %}
   <h3>Live Preview</h3>
-  <div style="margin-top: 20px; overflow-x: auto;">
-    {{ preview_html|safe }}
-  </div>
-  <script src="{% static 'doctemplates/preview.js' %}"></script>
+  {% if preview.2 %}
+    <p style="color:red;">{{ preview.2 }}</p>
+  {% else %}
+    <p class="help-text">{{ preview.0 }}</p>
+    {# The letter is a separate document (the same one the v2 generator prints to PDF), so the editor's styles do not touch it #}
+    <iframe class="tpl-frame" srcdoc="{{ preview.1 }}" style="display:block; width:100%; height:1200px; border:0; margin-top:10px;"></iframe>
+    <script>
+      // Grow the frame to the height of all pages once preview.js has split the letter into pages
+      (function () {
+        const frame = document.querySelector('.tpl-frame');
+        function fit() {
+          const doc = frame.contentDocument;
+          if (doc && doc.documentElement.dataset.paginated) {
+            frame.style.height = Math.ceil(doc.body.getBoundingClientRect().height) + 'px';
+          } else {
+            setTimeout(fit, 100);
+          }
+        }
+        frame.addEventListener('load', fit);
+      })();
+    </script>
+  {% endif %}
 {% endif %}
 
 <p style="margin-top:20px; font-size:0.9em; color:#555;">

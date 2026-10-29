@@ -25,24 +25,33 @@ def with_aliases(row):
     return row
 
 
-def _key(value):
+def link_key(value):
+    """Value of a linking column, comparable between the two Excels."""
     # Excel numbers can come back as "1718070440.0" in one file and "1718070440" in the other
     text = str(value).strip()
     return text[:-2] if re.fullmatch(r'\d+\.0', text) else text
+
+
+def group_by_key(rows, column):
+    """Rows of the second Excel grouped by their linking column, to look them up quickly for each letter."""
+    groups = {}
+    for row in rows:
+        groups.setdefault(link_key(row.get(column, '')), []).append(row)
+    return groups
 
 
 def linked_rows(main_row, detail_rows, main_key, detail_key):
     """Rows of the second Excel that belong to main_row."""
     if not (main_key and detail_key):
         return []
-    key = _key(main_row.get(main_key, ''))
-    return [with_aliases(r) for r in detail_rows if _key(r.get(detail_key, '')) == key]
+    key = link_key(main_row.get(main_key, ''))
+    return [with_aliases(r) for r in detail_rows if link_key(r.get(detail_key, '')) == key]
 
 
 def build_context(template, main_row, detail_rows):
     """Template context for one letter."""
     context = with_aliases(main_row)
-    if template.detail_excel or detail_rows:
+    if (template.main_key and template.detail_key) or template.detail_excel or detail_rows:
         name = template.detail_name or 'details'
         context[name] = linked_rows(main_row, detail_rows, template.main_key, template.detail_key)
     return context
